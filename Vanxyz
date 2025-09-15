@@ -1,0 +1,610 @@
+-- ========================
+-- LOAD RAYFIELD UI
+-- ========================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "SCRIPTS AUTO SUMMIT V3 || By Trzzhub",
+    Icon = 0,
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "By Trzzhub",
+    ShowText = "Scripts",
+    Theme = "DarkBlue",
+    ToggleUIKeybind = "K",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "TrzzHub"
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "TrzzHub",
+        Subtitle = "Key System",
+        Note = "Key ada di saluran: @TrzzHub",
+        FileName = "Key",
+        SaveKey = true,
+        Key = {"Trzzhub7"}
+    }
+})
+
+-- ========================
+-- TABS
+-- ========================
+local TabAuto   = Window:CreateTab("AUTO SUMMIT", 4483362458)
+local TabTp     = Window:CreateTab("PUNCAK", 4483362458)
+local TabMisc   = Window:CreateTab("SCRIPT", 4483362458)
+local TabHub    = Window:CreateTab("ANIMASI", 4483362458)
+local TabCre    = Window:CreateTab("TITLE", 4483362458)
+
+-- Fungsi animasi kosong
+function startAnimation(name, list)
+    -- Tidak melakukan apapun
+    -- Bisa ditambahkan print supaya tau kalau fungsi dipanggil
+    print("Animasi '" .. name .. "' dijalankan (kosong).")
+end
+
+-- Variabel global untuk simpan mode & thread animasi
+local currentMode = nil
+local animating = false
+
+-- Fungsi untuk kasih sparkles ke bagian tubuh
+local function applySparkles(character)
+    local parts = {
+        "HumanoidRootPart", "Head",
+        "LeftHand", "RightHand",
+        "LeftFoot", "RightFoot"
+    }
+
+    local sparklesList = {}
+    for _, partName in ipairs(parts) do
+        local part = character:FindFirstChild(partName)
+        if part then
+            local spark = part:FindFirstChild("Sparkles")
+            if not spark then
+                spark = Instance.new("Sparkles")
+                spark.Parent = part
+            end
+            table.insert(sparklesList, spark)
+        end
+    end
+    return sparklesList
+end
+
+-- Fungsi animasi
+local function startAnimation(mode, sparklesList)
+    currentMode = mode
+    animating = true
+
+    task.spawn(function()
+        local t = 0
+        while animating and currentMode == mode and #sparklesList > 0 do
+            t += 0.1
+
+            for _, s in ipairs(sparklesList) do
+                if mode == "DISCO" then
+                    local style = math.random(1,4)
+
+                    if style == 1 then
+                        -- 🌈 Rainbow cycle
+                        local r = math.sin(t) * 127 + 128
+                        local g = math.sin(t + 2) * 127 + 128
+                        local b = math.sin(t + 4) * 127 + 128
+                        s.SparkleColor = Color3.fromRGB(r,g,b)
+
+                    elseif style == 2 then
+                        -- ⚡ Random Disco
+                        s.SparkleColor = Color3.fromRGB(
+                            math.random(0,255),
+                            math.random(0,255),
+                            math.random(0,255)
+                        )
+
+                    elseif style == 3 then
+                        -- ❤️ Pulse merah → putih
+                        local value = (math.sin(t*4) + 1) * 127
+                        s.SparkleColor = Color3.fromRGB(255, value, value)
+
+                    elseif style == 4 then
+                        -- 🌟 Gradient shift (biru → ungu → pink)
+                        local r = (math.sin(t*2) + 1) * 127
+                        local g = (math.sin(t*2 + 2) + 1) * 50
+                        local b = 200
+                        s.SparkleColor = Color3.fromRGB(r,g,b)
+                    end
+
+                elseif mode == "PURPLE" then
+                    s.SparkleColor = Color3.fromRGB(160, 32, 240)
+
+                elseif mode == "CYAN" then
+                    s.SparkleColor = Color3.fromRGB(0, 200, 255)
+                end
+            end
+
+            task.wait(0.15)
+        end
+    end)
+end
+
+-- Tombol DISCO
+TabHub:CreateButton({
+    Name = "DISCO",
+    Callback = function()
+        animating = false -- stop animasi lama
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local sparklesList = applySparkles(character)
+        startAnimation("DISCO", sparklesList)
+    end
+})
+
+-- Tombol PURPLE
+TabHub:CreateButton({
+    Name = "PURPLE",
+    Callback = function()
+        animating = false
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local sparklesList = applySparkles(character)
+        startAnimation("PURPLE", sparklesList)
+    end
+})
+
+-- Tombol CYAN
+TabHub:CreateButton({
+    Name = "CYAN",
+    Callback = function()
+        animating = false
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local sparklesList = applySparkles(character)
+        startAnimation("CYAN", sparklesList)
+    end
+})
+
+-- Auto re-apply saat respawn
+local player = game.Players.LocalPlayer
+player.CharacterAdded:Connect(function(char)
+    if currentMode then
+        task.wait(1) -- tunggu karakter selesai spawn
+        local sparklesList = applySparkles(char)
+        startAnimation(currentMode, sparklesList)
+    end
+end)
+
+-- ========================
+-- TITLE BUTTON FUNCTION
+-- ========================
+local function createTitleButton(name, textContent)
+    TabCre:CreateButton({
+        Name = name,
+        Callback = function()
+            local player = game.Players.LocalPlayer
+            local char   = player.Character or player.CharacterAdded:Wait()
+            local head   = char:WaitForChild("Head")
+
+            if head:FindFirstChild("AdminTag") then
+                head.AdminTag:Destroy()
+            end
+
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "AdminTag"
+            billboard.Parent = head
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.AlwaysOnTop = true
+            billboard.LightInfluence = 0
+
+            local text = Instance.new("TextLabel")
+            text.Parent = billboard
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.Text = textContent
+            text.TextColor3 = Color3.fromRGB(0, 255, 255)
+            text.TextStrokeTransparency = 0
+            text.Font = Enum.Font.SourceSansBold
+            text.TextSize = 25
+        end,
+    })
+end
+
+-- TITLE LIST
+createTitleButton("👑 OWNER 👑", "👑 OWNER 👑")
+createTitleButton("🛡️ HeadAdmin 🛡️", "🛡️ HeadAdmin 🛡️")
+createTitleButton("👑 ADMIN 👑", "👑 ADMIN 👑")
+createTitleButton("💎 VIP 💎", "💎 VIP 💎")
+createTitleButton("🏆 TOP DONATUR 🏆", "🏆 TOP DONATUR 🏆")
+
+-- ========================
+-- MISC SCRIPTS
+-- ========================
+TabMisc:CreateButton({
+    Name = "FLY GUI V3",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Gui-Fly-v3-37111"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "INFINITE YIELD",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end,
+})
+
+
+TabMisc:CreateButton({
+    Name = "SPEED COIL",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local speedValue = 23 -- kecepatan saat pakai coil
+
+        local function giveCoil(char)
+            local backpack = player:WaitForChild("Backpack")
+
+            if backpack:FindFirstChild("Speed Coil") or char:FindFirstChild("Speed Coil") then
+                return
+            end
+
+            local tool = Instance.new("Tool")
+            tool.Name = "Speed Coil"
+            tool.RequiresHandle = false -- hilangkan handle agar tangan tidak animasi
+            tool.Parent = backpack
+
+            -- jangan buat Handle atau mesh sama sekali
+
+            tool.Equipped:Connect(function()
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = speedValue
+                end
+            end)
+
+            tool.Unequipped:Connect(function()
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = 16
+                end
+            end)
+        end
+
+        if player.Character then
+            giveCoil(player.Character)
+        end
+
+        player.CharacterAdded:Connect(function(char)
+            task.wait(1)
+            giveCoil(char)
+        end)
+    end,
+})
+
+
+
+TabMisc:CreateButton({
+    Name = "SC AUTO WALK",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/XmFN7UHc"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "BRING PART",
+    Callback = function()
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/tarz2642008-ship-it/ed8e924b00a9a2b87b57c722498cad9c/raw/f43d555c085bc86a24da8f081b7db4103efc16d9/RingPart"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "FLING GUI",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fling-Gui-Op-47914"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "BOOST FPS",
+    Callback = function()
+        repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
+        loadstring(game:HttpGet("https://pastefy.app/08huVciY/raw"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "TP TOOL",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local mouse = player:GetMouse()
+
+        -- Bikin tool baru
+        local tool = Instance.new("Tool")
+        tool.RequiresHandle = false
+        tool.Name = "TP Tool"
+        tool.Parent = player.Backpack
+
+        tool.Activated:Connect(function()
+            if mouse.Hit then
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p + Vector3.new(0,3,0))
+                end
+            end
+        end)
+    end,
+})
+
+TabMisc:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {10, 500},
+   Increment = 1,
+   CurrentValue = 15,
+   Suffix = "Speed",
+   Callback = function(Value)
+      local char = game.Players.LocalPlayer.Character
+      if char and char:FindFirstChild("Humanoid") then
+         char.Humanoid.WalkSpeed = Value
+      end
+   end,
+})
+
+TabMisc:CreateSlider({
+    Name = "Jump Height",
+    Range = {10, 500},
+    Increment = 1,
+    CurrentValue = 50,
+    Suffix = "Height",
+    Callback = function(Value)
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.JumpPower = Value
+        end
+    end,
+})
+
+-- ========================
+-- AUTO SUMMIT FUNCTION (FIXED)
+-- ========================
+local Players = game:GetService("Players")
+local player  = Players.LocalPlayer
+
+local function createAutoSummit(name, positions, respawnDelay, stepDelay, options)
+    local enabled     = false
+    local cancelToken = nil
+    respawnDelay      = respawnDelay or 3
+    stepDelay         = stepDelay or 4
+    options           = options or {}
+    local autoRespawn = (options.autoRespawn ~= false) -- default true
+
+    local function start(char)
+        if cancelToken then cancelToken.cancelled = true end
+        local token = {cancelled = false}
+        cancelToken = token
+
+        task.spawn(function()
+            local hrp = char:WaitForChild("HumanoidRootPart", 10)
+            if not hrp then return end
+
+            while enabled and not token.cancelled and char.Parent do
+                for _, pos in ipairs(positions) do
+                    if not enabled or token.cancelled then break end
+                    hrp = char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        pcall(function()
+                            hrp.CFrame = pos
+                        end)
+                    end
+                    task.wait(stepDelay)
+                end
+
+                -- Hanya respawn kalau autoRespawn = true
+                if autoRespawn and enabled and not token.cancelled and char:FindFirstChild("Humanoid") then
+                    task.wait(respawnDelay)
+                    pcall(function()
+                        char:BreakJoints()
+                    end)
+                end
+
+                task.wait(0.5)
+            end
+        end)
+    end
+
+    player.CharacterAdded:Connect(function(char)
+        if enabled then
+            task.wait(1)
+            local hrp = char:WaitForChild("HumanoidRootPart", 10)
+            if hrp then
+                hrp.CFrame = positions[#positions]
+            end
+            start(char)
+        end
+    end)
+
+    -- Toggle di tab AUTO SUMMIT
+    TabAuto:CreateToggle({
+        Name = name,
+        CurrentValue = false,
+        Callback = function(value)
+            enabled = value
+            if enabled and player.Character then
+                start(player.Character)
+            elseif cancelToken then
+                cancelToken.cancelled = true
+                cancelToken = nil
+            end
+        end,
+    })
+
+    -- Button teleport ke puncak di tab TELEPORT PUNCAK
+    TabTp:CreateButton({
+        Name = "PUNCAK " .. name,
+        Callback = function()
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = positions[#positions]
+            end
+        end,
+    })
+end
+
+-- ========================
+-- DAFTAR GUNUNG
+-- ========================
+
+-- MOUNT ATIN
+{"yellowPlatforms":[{"position":{"Y":125.051025390625,"X":-134.70152282714845,"Z":320.8585205078125}},{"position":{"Y":123.28492736816406,"X":-176.30316162109376,"Z":403.94732666015627}}],"mappings":[1,2],"redPlatforms":[{"movements":[{"orientation":{"Y":-14.189000129699707,"X":0,"Z":0},"isJumping":false,"position":{"Y":128.33958435058595,"X":-184.1753692626953,"Z":407.9964294433594}},{"orientation":{"Y":-27.163000106811525,"X":0,"Z":0},"isJumping":false,"position":{"Y":128.0935516357422,"X":-183.65054321289063,"Z":407.31170654296877}},{"orientation":{"Y":-31.56999969482422,"X":0,"Z":0},"isJumping":false,"position":{"Y":127.63314819335938,"X":-183.2172393798828,"Z":406.6972961425781}},{"orientation":{"Y":-32.67399978637695,"X":0,"Z":0},"isJumping":false,"position":{"Y":127.16896057128906,"X":-182.77774047851563,"Z":406.0274658203125}},{"orientation":{"Y":-31.488000869750978,"X":0,"Z":0},"isJumping":false,"position":{"Y":127.02903747558594,"X":-182.3478240966797,"Z":405.28900146484377}},{"orientation":{"Y":-28.923999786376954,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.88748168945313,"X":-181.9649658203125,"Z":404.5245666503906}},{"orientation":{"Y":-26.80299949645996,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.75970458984375,"X":-181.6548309326172,"Z":403.8444519042969}},{"orientation":{"Y":-25.934999465942384,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.68093872070313,"X":-181.48257446289063,"Z":403.4548034667969}},{"orientation":{"Y":-25.268999099731447,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.58847045898438,"X":-181.2889862060547,"Z":403.01708984375}},{"orientation":{"Y":-24.576000213623048,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.5035171508789,"X":-181.12527465820313,"Z":402.6249084472656}},{"orientation":{"Y":-23.50200080871582,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.3438720703125,"X":-180.82061767578126,"Z":401.888671875}},{"orientation":{"Y":-23.792999267578126,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.247314453125,"X":-180.6197509765625,"Z":401.455078125}},{"orientation":{"Y":-25.618000030517579,"X":0,"Z":0},"isJumping":false,"position":{"Y":126.12812042236328,"X":-180.33639526367188,"Z":400.94476318359377}},{"orientation":{"Y":-29.054000854492189,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.98651885986328,"X":-179.95436096191407,"Z":400.3704833984375}},{"orientation":{"Y":-33.00400161743164,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.85377502441406,"X":-179.55502319335938,"Z":399.875244140625}},{"orientation":{"Y":-37.08300018310547,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.66748809814453,"X":-179.0067138671875,"Z":399.2305603027344}},{"orientation":{"Y":-38.858001708984378,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.49282836914063,"X":-178.46063232421876,"Z":398.5805969238281}},{"orientation":{"Y":-39.180999755859378,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.38943481445313,"X":-178.018798828125,"Z":398.0422668457031}},{"orientation":{"Y":-38.97200012207031,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.2560806274414,"X":-177.69056701660157,"Z":397.6287536621094}},{"orientation":{"Y":-38.16699981689453,"X":0,"Z":0},"isJumping":false,"position":{"Y":125.01151275634766,"X":-177.35885620117188,"Z":397.1833801269531}},{"orientation":{"Y":-36.62799835205078,"X":0,"Z":0},"isJumping":false,"position":{"Y":124.68292999267578,"X":-176.96873474121095,"Z":396.6230773925781}},{"orientation":{"Y":-34.571998596191409,"X":0,"Z":0},"isJumping":false,"position":{"Y":124.36714172363281,"X":-176.60325622558595,"Z":396.0431213378906}},{"orientation":{"Y":-32.31800079345703,"X":0,"Z":0},"isJumping":false,"position":{"Y":124.05860900878906,"X":-176.1993408203125,"Z":395.3556823730469}},{"orientation":{"Y":-31.520000457763673,"X":0,"Z":0},"isJumping":false,"position":{"Y":123.89725494384766,"X":-175.9709930419922,"Z":394.9596252441406}},{"orientation":{"Y":-30.395000457763673,"X":0,"Z":0},"isJumping":false,"position":{"Y":123.63909149169922,"X":-175.59658813476563,"Z":394.292724609375}},{"orientation":{"Y":-29.642000198364259,"X":0,"Z":0},"isJumping":false,"position":{"Y":123.36021423339844,"X":-175.19921875,"Z":393.5781555175781}},{"orientation":{"Y":-29.29800033569336,"X":0,"Z":0},"isJumping":false,"position":{"Y":123.06892395019531,"X":-174.80194091796876,"Z":392.8634033203125}},{"orientation":{"Y":-29.1560001373291,"X":0,"Z":0},"isJumping":false,"position":{"Y":122.78483581542969,"X":-174.4047088623047,"Z":392.1485900878906}},{"orientation":{"Y":-27.607999801635743,"X":0,"Z":0},"isJumping":false,"position":{"Y":122.51667785644531,"X":-174.04302978515626,"Z":391.41070556640627}},{"orientation":{"Y":-25.757999420166017,"X":0,"Z":0},"isJumping":false,"position":{"Y":122.25514221191406,"X":-173.70468139648438,"Z":390.6568908691406}},{"orientation":{"Y":-25.422000885009767,"X":0,"Z":0},"isJumping":false,"position":{"Y":122.0918960571289,"X":-173.48570251464845,"Z":390.1891174316406}},{"orientation":{"Y":-25.26300048828125,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.82341003417969,"X":-173.13551330566407,"Z":389.443359375}},{"orientation":{"Y":-25.51300048828125,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.70369720458985,"X":-172.95065307617188,"Z":389.07025146484377}},{"orientation":{"Y":-26.964000701904298,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.49493408203125,"X":-172.5530548095703,"Z":388.33221435546877}},{"orientation":{"Y":-28.099000930786134,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.33118438720703,"X":-172.14256286621095,"Z":387.591796875}},{"orientation":{"Y":-29.118999481201173,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.19739532470703,"X":-171.81854248046876,"Z":387.04437255859377}},{"orientation":{"Y":-29.95199966430664,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.06713104248047,"X":-171.48947143554688,"Z":386.4991455078125}},{"orientation":{"Y":-30.6200008392334,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.89601135253906,"X":-171.0501251220703,"Z":385.77191162109377}},{"orientation":{"Y":-31.128000259399415,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.72557830810547,"X":-170.60568237304688,"Z":385.0475769042969}},{"orientation":{"Y":-31.523000717163087,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.57698059082031,"X":-170.21221923828126,"Z":384.4167175292969}},{"orientation":{"Y":-31.729000091552736,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.34474182128906,"X":-169.7703094482422,"Z":383.7058410644531}},{"orientation":{"Y":-31.742000579833986,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.25386047363281,"X":-169.6623077392578,"Z":383.5312194824219}},{"orientation":{"Y":-31.73699951171875,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.07228088378906,"X":-169.42019653320313,"Z":383.1395568847656}},{"orientation":{"Y":-31.729000091552736,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.83513641357422,"X":-169.10122680664063,"Z":382.6235656738281}},{"orientation":{"Y":-31.579999923706056,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.6922607421875,"X":-168.91917419433595,"Z":382.3207092285156}},{"orientation":{"Y":-31.312999725341798,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.53451538085938,"X":-168.7139892578125,"Z":381.97320556640627}},{"orientation":{"Y":-31.062000274658204,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.37657928466797,"X":-168.509765625,"Z":381.62518310546877}},{"orientation":{"Y":-30.756999969482423,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.19844055175781,"X":-168.28253173828126,"Z":381.2323303222656}},{"orientation":{"Y":-30.572999954223634,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.06289672851563,"X":-168.1053466796875,"Z":380.92572021484377}},{"orientation":{"Y":-30.41900062561035,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.911865234375,"X":-167.90211486816407,"Z":380.57403564453127}},{"orientation":{"Y":-30.30699920654297,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.77010345458985,"X":-167.69723510742188,"Z":380.2195129394531}},{"orientation":{"Y":-30.226999282836915,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.86353302001953,"X":-167.48199462890626,"Z":379.8471374511719}},{"orientation":{"Y":-30.163000106811525,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.13639068603516,"X":-167.24313354492188,"Z":379.4338684082031}},{"orientation":{"Y":-29.996000289916993,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.58976745605469,"X":-166.99700927734376,"Z":379.0013427734375}},{"orientation":{"Y":-29.874000549316408,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.95149993896485,"X":-166.88906860351563,"Z":378.80865478515627}},{"orientation":{"Y":-29.66699981689453,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.45960998535156,"X":-166.67837524414063,"Z":378.4316101074219}},{"orientation":{"Y":-29.45599937438965,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.6948013305664,"X":-166.50083923339845,"Z":378.1079406738281}},{"orientation":{"Y":-29.155000686645509,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.79269409179688,"X":-166.2963409423828,"Z":377.72845458984377}},{"orientation":{"Y":-28.91200065612793,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.70829772949219,"X":-166.10220336914063,"Z":377.3677978515625}},{"orientation":{"Y":-28.552000045776368,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.4581298828125,"X":-165.91830444335938,"Z":377.0149230957031}},{"orientation":{"Y":-28.152999877929689,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.31013488769531,"X":-165.74203491210938,"Z":376.6701354980469}},{"orientation":{"Y":-27.802000045776368,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.12609100341797,"X":-165.53509521484376,"Z":376.2647399902344}},{"orientation":{"Y":-27.492000579833986,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.93609619140625,"X":-165.35374450683595,"Z":375.90350341796877}},{"orientation":{"Y":-27.05900001525879,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.73003387451172,"X":-165.15525817871095,"Z":375.4973449707031}},{"orientation":{"Y":-26.499000549316408,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.23907470703125,"X":-164.92135620117188,"Z":375.01361083984377}},{"orientation":{"Y":-26.229000091552736,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.33808898925781,"X":-164.79153442382813,"Z":374.7401428222656}},{"orientation":{"Y":-25.631000518798829,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.1565170288086,"X":-164.61012268066407,"Z":374.34344482421877}},{"orientation":{"Y":-25.11400032043457,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.62549591064453,"X":-164.37664794921876,"Z":373.8094787597656}},{"orientation":{"Y":-24.695999145507814,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.05110168457031,"X":-164.22679138183595,"Z":373.4606628417969}},{"orientation":{"Y":-24.14900016784668,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.81127166748047,"X":-163.99545288085938,"Z":372.9223327636719}},{"orientation":{"Y":-23.52400016784668,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.4517593383789,"X":-163.7721405029297,"Z":372.3818359375}},{"orientation":{"Y":-23.01099967956543,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.39263153076172,"X":-163.50692749023438,"Z":371.7386169433594}},{"orientation":{"Y":-22.73200035095215,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.3298110961914,"X":-163.34625244140626,"Z":371.3410949707031}},{"orientation":{"Y":-22.54400062561035,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.2939453125,"X":-163.2051239013672,"Z":370.9914245605469}},{"orientation":{"Y":-22.365999221801759,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.24820709228516,"X":-163.02352905273438,"Z":370.54156494140627}},{"orientation":{"Y":-22.26799964904785,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.21051025390625,"X":-162.88230895996095,"Z":370.1916809082031}},{"orientation":{"Y":-22.110000610351564,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.12549591064453,"X":-162.5595245361328,"Z":369.39190673828127}},{"orientation":{"Y":-22.07699966430664,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.09858703613281,"X":-162.43833923339845,"Z":369.0916748046875}},{"orientation":{"Y":-22.03700065612793,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.04862976074219,"X":-162.19589233398438,"Z":368.49078369140627}},{"orientation":{"Y":-22.00200080871582,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.05887603759766,"X":-162.01394653320313,"Z":368.0387878417969}},{"orientation":{"Y":-22.059999465942384,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.07732391357422,"X":-161.87037658691407,"Z":367.68896484375}},{"orientation":{"Y":-22.229999542236329,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.11479187011719,"X":-161.7042236328125,"Z":367.292236328125}},{"orientation":{"Y":-22.55500030517578,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.17452239990235,"X":-161.53407287597657,"Z":366.90087890625}},{"orientation":{"Y":-22.836999893188478,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.22157287597656,"X":-161.36151123046876,"Z":366.50518798828127}},{"orientation":{"Y":-23.09600067138672,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.24652099609375,"X":-161.207763671875,"Z":366.1588134765625}},{"orientation":{"Y":-23.341999053955079,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.25178527832031,"X":-161.0317840576172,"Z":365.76300048828127}},{"orientation":{"Y":-23.648000717163087,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.21946716308594,"X":-160.85256958007813,"Z":365.3698425292969}},{"orientation":{"Y":-23.900999069213868,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.18534851074219,"X":-160.6730499267578,"Z":364.9769592285156}},{"orientation":{"Y":-24.159000396728517,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.14716339111328,"X":-160.4696807861328,"Z":364.5354919433594}},{"orientation":{"Y":-24.385000228881837,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.1233901977539,"X":-160.30899047851563,"Z":364.19293212890627}},{"orientation":{"Y":-24.7189998626709,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.10116577148438,"X":-160.09939575195313,"Z":363.75335693359377}},{"orientation":{"Y":-25.035999298095704,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.08409881591797,"X":-159.9103240966797,"Z":363.36376953125}},{"orientation":{"Y":-25.46500015258789,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.07170104980469,"X":-159.71591186523438,"Z":362.97674560546877}},{"orientation":{"Y":-25.983999252319337,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.0676040649414,"X":-159.5164337158203,"Z":362.5921325683594}},{"orientation":{"Y":-26.854999542236329,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.0581283569336,"X":-159.30401611328126,"Z":362.2145690917969}},{"orientation":{"Y":-28.549999237060548,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.04542541503906,"X":-158.99253845214845,"Z":361.7068786621094}},{"orientation":{"Y":-29.427000045776368,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.0386734008789,"X":-158.81698608398438,"Z":361.4334716796875}},{"orientation":{"Y":-30.76799964904785,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.02882385253906,"X":-158.54544067382813,"Z":361.02874755859377}},{"orientation":{"Y":-31.482999801635743,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.02227783203125,"X":-158.3634033203125,"Z":360.75958251953127}},{"orientation":{"Y":-32.268001556396487,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.01361083984375,"X":-158.119140625,"Z":360.40179443359377}},{"orientation":{"Y":-32.935001373291019,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.00366973876953,"X":-157.87271118164063,"Z":360.0455017089844}},{"orientation":{"Y":-33.4900016784668,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.9923324584961,"X":-157.62469482421876,"Z":359.69036865234377}},{"orientation":{"Y":-34.084999084472659,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.97807312011719,"X":-157.3421630859375,"Z":359.2933349609375}},{"orientation":{"Y":-34.41899871826172,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.9625473022461,"X":-157.0924530029297,"Z":358.9395751953125}},{"orientation":{"Y":-34.63999938964844,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.9468002319336,"X":-156.84288024902345,"Z":358.58575439453127}},{"orientation":{"Y":-34.77199935913086,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.9310531616211,"X":-156.59396362304688,"Z":358.2314758300781}},{"orientation":{"Y":-34.861000061035159,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.9153060913086,"X":-156.34506225585938,"Z":357.877197265625}},{"orientation":{"Y":-34.97600173950195,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.90486907958985,"X":-156.09471130371095,"Z":357.52362060546877}},{"orientation":{"Y":-35.073001861572269,"X":0,"Z":0},"isJumping":false,"position":{"Y":115.90011596679688,"X":-155.84423828125,"Z":357.17010498046877}},{"orientation":{"Y":-35.165000915527347,"X":0,"Z":0},"isJumping":false,"position":{"Y":117.42214965820313,"X":-155.59376525878907,"Z":356.8165588378906}},{"orientation":{"Y":-35.19200134277344,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.72618103027344,"X":-155.34384155273438,"Z":356.4625549316406}},{"orientation":{"Y":-35.165000915527347,"X":0,"Z":0},"isJumping":true,"position":{"Y":119.81221008300781,"X":-155.09487915039063,"Z":356.1078796386719}},{"orientation":{"Y":-35.1349983215332,"X":0,"Z":0},"isJumping":true,"position":{"Y":120.68023681640625,"X":-154.84597778320313,"Z":355.7531433105469}},{"orientation":{"Y":-35.111000061035159,"X":0,"Z":0},"isJumping":true,"position":{"Y":121.39618682861328,"X":-154.5659637451172,"Z":355.35406494140627}},{"orientation":{"Y":-35.08100128173828,"X":0,"Z":0},"isJumping":true,"position":{"Y":121.83624267578125,"X":-154.28628540039063,"Z":354.9547424316406}},{"orientation":{"Y":-35.060001373291019,"X":0,"Z":0},"isJumping":true,"position":{"Y":121.99577331542969,"X":-154.03775024414063,"Z":354.59979248046877}},{"orientation":{"Y":-34.930999755859378,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.91466522216797,"X":-153.76095581054688,"Z":354.198486328125}},{"orientation":{"Y":-34.73099899291992,"X":0,"Z":0},"isJumping":false,"position":{"Y":121.55765533447266,"X":-153.48654174804688,"Z":353.79559326171877}},{"orientation":{"Y":-34.38100051879883,"X":0,"Z":0},"isJumping":false,"position":{"Y":120.8373794555664,"X":-153.18626403808595,"Z":353.3448486328125}},{"orientation":{"Y":-34.13800048828125,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.89789581298828,"X":-152.91624450683595,"Z":352.93896484375}},{"orientation":{"Y":-33.90599822998047,"X":0,"Z":0},"isJumping":false,"position":{"Y":118.68251037597656,"X":-152.64801025390626,"Z":352.5320129394531}},{"orientation":{"Y":-33.638999938964847,"X":0,"Z":0},"isJumping":false,"position":{"Y":117.37053680419922,"X":-152.4126434326172,"Z":352.1681823730469}},{"orientation":{"Y":-33.21900177001953,"X":0,"Z":0},"isJumping":false,"position":{"Y":117.2649917602539,"X":-152.12442016601563,"Z":351.7135925292969}},{"orientation":{"Y":-32.96699905395508,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.97958374023438,"X":-151.8946990966797,"Z":351.35076904296877}},{"orientation":{"Y":-32.74700164794922,"X":0,"Z":0},"isJumping":false,"position":{"Y":116.3874740600586,"X":-151.63778686523438,"Z":350.94384765625}},{"orientation":{"Y":-32.55799865722656,"X":0,"Z":0},"isJumping":false,"position":{"Y":117.93335723876953,"X":-151.40948486328126,"Z":350.58233642578127}},{"orientation":{"Y":-32.38399887084961,"X":0,"Z":0},"isJumping":false,"position":{"Y":119.26463317871094,"X":-151.18038940429688,"Z":350.21502685546877}},{"orientation":{"Y":-32.25299835205078,"X":0,"Z":0},"isJumping":true,"position":{"Y":120.37791442871094,"X":-150.9512481689453,"Z":349.8471374511719}},{"orientation":{"Y":-32.14699935913086,"X":0,"Z":0},"isJumping":true,"position":{"Y":121.3697738647461,"X":-150.69346618652345,"Z":349.4332580566406}},{"orientation":{"Y":-32.07400131225586,"X":0,"Z":0},"is
+
+-- Auto Rejoin setelah sampai di CFrame terakhir
+local TeleportService = game:GetService("TeleportService")
+task.spawn(function()
+    while task.wait(1) do
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = player.Character.HumanoidRootPart
+            local lastCFrame = CFrame.new(781.23, 2166.03, 3921.29) -- CFrame terakhir
+
+            if (hrp.Position - lastCFrame.Position).Magnitude < 10 then
+                task.wait(2) -- delay 2 detik
+                TeleportService:Teleport(game.PlaceId, player)
+                break
+            end
+        end
+    end
+end)
+
+-- MOUNT CING
+createAutoSummit("MOUNT CING", {
+    CFrame.new(331.84, 139.41, 829.17),
+    CFrame.new(137.58, 79.41, 355.69),
+    CFrame.new(53.14, 79.41, 28.00),
+    CFrame.new(747.08, 127.41, 356.06),
+    CFrame.new(676.80, 131.41, -764.56),
+    CFrame.new(241.03, 251.41, -469.02),
+    CFrame.new(-504.51, 437.00, -399.26),
+    CFrame.new(-1336.50, 423.41, -444.37),
+    CFrame.new(-1837.70, 493.00, -111.90),
+    CFrame.new(-2196.33, 783.41, 985.90),
+    CFrame.new(-1491.83, 1288.89, 1066.64),
+}, 3, 4)
+
+-- MOUNT SUMBING
+createAutoSummit("MOUNT SUMBING", {
+    CFrame.new(-225.54, 441.00, 2142.43),
+    CFrame.new(-427.57, 849.00, 3204.18),
+    CFrame.new(41.93, 1269.00, 4044.11),
+    CFrame.new(-1142.34, 1553.00, 4899.95),
+    CFrame.new(-896.04, 1948.29, 5352.81),
+}, 3, 4)
+
+-- MOUNT HANAMI
+createAutoSummit("MOUNT HANAMI", {
+    CFrame.new(515.81, 141.34, -121.60),
+    CFrame.new(359.75, 195.70, -613.76),
+    CFrame.new(-93.18, 169.79, -490.25),
+    CFrame.new(-933.26, 345.41, -512.65),
+    CFrame.new(-1277.02, 477.72, -329.48),
+    CFrame.new(-1975.74, 609.55, 131.92),
+    CFrame.new(-2765.88, 669.34, 44.07),
+    CFrame.new(-2601.37, 848.96, -323.42),
+}, 1, 3)
+
+-- MOUNT ADUH (langsung teleport + auto rejoin)
+do
+    local TeleportService = game:GetService("TeleportService")
+
+    TabAuto:CreateToggle({
+        Name = "MOUNT ADUH",
+        CurrentValue = false,
+        Callback = function(value)
+            if value then
+                task.spawn(function()
+                    local char = player.Character or player.CharacterAdded:Wait()
+                    local hrp = char:WaitForChild("HumanoidRootPart", 10)
+                    if hrp then
+                        -- teleport ke posisi puncak
+                        hrp.CFrame = CFrame.new(-805.00, 2744.41, 1248.00)
+                        -- delay 3 detik lalu rejoin
+                        task.wait(3)
+                        pcall(function()
+                            TeleportService:Teleport(game.PlaceId, player)
+                        end)
+                    end
+                end)
+            end
+        end,
+    })
+
+    -- Button teleport manual ke puncak
+    TabTp:CreateButton({
+        Name = "PUNCAK MOUNT ADUH",
+        Callback = function()
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(-805.00, 2744.41, 1248.00)
+            end
+        end,
+    })
+end
+
+-- MOUNT GAMPIL (NO AUTORESPAWN + TELEPORT SECEPAT MUNGKIN)
+createAutoSummit("MOUNT GAMPIL", {
+    CFrame.new(570.05, 372.38, 144.33),
+    CFrame.new(364.00, 432.40, -1245.00),
+}, 1, 0, {
+    autoRespawn = false
+})
+
+-- MOUNT YAHAYUK (NO AUTORESPAWN + TELEPORT SECEPAT MUNGKIN)
+createAutoSummit("MOUNT YAHAYUK", {
+    CFrame.new(-420.05, 249.64, 769.69),
+    CFrame.new(-347.92, 388.64, 522.19),
+    CFrame.new(288.00, 429.64, 504.00),
+    CFrame.new(333.85, 490.64, 348.98),
+    CFrame.new(212.54, 314.64, -146.42),
+    CFrame.new(-616.00, 905.38, -510.00),
+}, 1, 1, {
+    autoRespawn = false
+})
+
+createAutoSummit("MOUNT OWASHU", {
+    CFrame.new(-310.63, 70.94, 631.32),      -- CP 1
+    CFrame.new(7.17, 73.05, 1096.95),        -- CP 2
+    CFrame.new(-606.59, 253.05, 1226.75),    -- CP 3
+    CFrame.new(-1077.02, 328.65, 1416.00),   -- CP 4
+    CFrame.new(-1187.75, 488.64, 1787.63),   -- CP 5
+    CFrame.new(-1576.99, 670.25, 2322.01)    -- SUM
+}, 2, 1, {   -- delay antar posisi = 2 detik
+    autoRespawn = true
+})
+
+createAutoSummit("MOUNT PASANG SIGMA", {
+    CFrame.new(-54.26, 611.33, -487.00),      -- CP 1
+    CFrame.new(580.76, 846.81, 2852.67),      -- CP 2
+    CFrame.new(1799.04, 1083.41, 6131.96),    -- CP 3
+    CFrame.new(3707.07, 1572.18, 9050.33),    -- CP 4
+    CFrame.new(1136.15, 1671.33, 9455.95),    -- CP 5
+    CFrame.new(-566.15, 2050.75, 9498.65)     -- SUM
+}, 2, 2, {   -- delay antar posisi = 2 detik, delay respawn = 3 detik
+    autoRespawn = true
+})
+
+createAutoSummit("MOUNT LABIRIN", {
+    CFrame.new(-994.22, 124.47, -253.71),   -- CP 1
+    CFrame.new(7.72, 97.16, -372.16),       -- CP 2
+    CFrame.new(-66.56, 96.99, 44.85),       -- CP 3
+    CFrame.new(183.43, 96.18, 42.60),       -- CP 4
+    CFrame.new(772.51, 276.62, 512.32),     -- CP 5
+    CFrame.new(1123.88, 368.82, 480.56),    -- CP 6
+    CFrame.new(1502.94, 427.30, -366.49),   -- CP 7
+    CFrame.new(1169.64, 453.27, -497.46),   -- CP 8
+    CFrame.new(712.28, 433.41, -400.81),    -- CP 9
+    CFrame.new(934.43, 530.11, -84.31),     -- CP 10
+    CFrame.new(1170.98, 545.27, -38.62),    -- CP 11
+    CFrame.new(1218.25, 631.96, -79.29),    -- CP 12
+    CFrame.new(1158.22, 642.92, -282.00),   -- CP 13
+    CFrame.new(900.05, 669.27, -47.27),     -- CP 14
+    CFrame.new(1174.73, 805.02, -100.76),   -- CP 15
+    CFrame.new(1177.31, 800.85, -181.09)    -- CP 16 / Summit
+}, 1, 1, {   -- delay antar posisi = 2 detik, delay respawn = 3 detik
+    autoRespawn = true
+})
