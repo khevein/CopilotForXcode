@@ -1,0 +1,168 @@
+-- ========================
+-- LOAD RAYFIELD UI
+-- ========================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "SCRIPTS AUTO SUMMIT V2 || By VanxyZ",
+    Icon = 0,
+    LoadingTitle = "VanxyzHub",
+    LoadingSubtitle = "by Vanxyz",
+    ShowText = "Scripts",
+    Theme = "Default",
+    ToggleUIKeybind = "K",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "Vanxyz"
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "Vanxyz",
+        Subtitle = "Key System",
+        Note = "Key ada di saluran: @Vanxyz",
+        FileName = "Key",
+        SaveKey = true,
+        Key = {"Vanxyz"}
+    }
+})
+
+-- ========================
+-- TABS
+-- ========================
+local TabAuto   = Window:CreateTab("AUTO SUMMIT", 4483362458)
+local TabTp     = Window:CreateTab("TP PUNCAK", 4483362458)
+local TabMisc   = Window:CreateTab("SCRIPT", 4483362458)
+local TabCre    = Window:CreateTab("TITLE", 4483362458)
+
+-- ========================
+-- TITLE BUTTON FUNCTION
+-- ========================
+local function createTitleButton(name, textContent)
+    TabCre:CreateButton({
+        Name = name,
+        Callback = function()
+            local player = game.Players.LocalPlayer
+            local char   = player.Character or player.CharacterAdded:Wait()
+            local head   = char:WaitForChild("Head")
+
+            if head:FindFirstChild("AdminTag") then
+                head.AdminTag:Destroy()
+            end
+
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "AdminTag"
+            billboard.Parent = head
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.AlwaysOnTop = true
+            billboard.LightInfluence = 0
+
+            local text = Instance.new("TextLabel")
+            text.Parent = billboard
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.Text = textContent
+            text.TextColor3 = Color3.fromRGB(0, 255, 255)
+            text.TextStrokeTransparency = 0
+            text.Font = Enum.Font.SourceSansBold
+            text.TextSize = 25
+        end,
+    })
+end
+
+-- TITLE LIST
+createTitleButton("👑 OWNER 👑", "👑 OWNER 👑")
+createTitleButton("👑 ADMIN 👑", "👑 ADMIN 👑")
+createTitleButton("💎 VIP 💎", "💎 VIP 💎")
+
+-- ========================
+-- MISC SCRIPTS
+-- ========================
+TabMisc:CreateButton({
+    Name = "FLY GUI V3",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Gui-Fly-v3-37111"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "Animation",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Gazer-FE-Animation-Editor-14508"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "INFINITE YIELD",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "SPEED COIL",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local speedValue = 38 -- kecepatan saat pakai coil
+
+        local function giveCoil(char)
+            local backpack = player:WaitForChild("Backpack")
+
+            if backpack:FindFirstChild("Speed Coil") or char:FindFirstChild("Speed Coil") then
+                return
+            end
+
+            local tool = Instance.new("Tool")
+            tool.Name = "Speed Coil"
+            tool.RequiresHandle = false
+            tool.Parent = backpack
+
+
+            tool.Equipped:Connect(function()
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = speedValue
+                end
+            end)
+
+            tool.Unequipped:Connect(function()
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = 16
+                end
+            end)
+        end
+
+        if player.Character then
+            giveCoil(player.Character)
+        end
+
+        player.CharacterAdded:Connect(function(char)
+            task.wait(1)
+            giveCoil(char)
+        end)
+    end,
+})
+
+
+
+TabMisc:CreateButton({
+    Name = "SC AUTO WALK",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/XmFN7UHc"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "BRING PART",
+    Callback = function()
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/tarz2642008-ship-it/ed8e924b00a9a2b87b57c722498cad9c/raw/f43d555c085bc86a24da8f081b7db4103efc16d9/RingPart"))()
+    end,
+})
+
+TabMisc:CreateButton({
+    Name = "FLING GUI",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Unive
